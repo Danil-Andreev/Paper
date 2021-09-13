@@ -1,0 +1,80 @@
+---
+title: "Calculations"
+author: "Evgenii Gilenko"
+---
+
+# Libraries and data import
+
+```{r message=F, warning=FALSE}
+library(openxlsx)
+library(dplyr)
+library(stringr)
+library(EviewsR)
+library(lmtest)
+library(forecast) #tsdisplay
+```
+
+```{r}
+dfWrk <- read.csv("dataWrk.csv")
+```
+
+
+# SIMPLE LINEAR REGRESSION ANALYSIS
+
+```{r}
+mdlNPL <- lm(data=dfWrk, logNPLa~logSID+R+logNGDP+bvQ1+bvQ2+bvQ3)
+#
+summary(mdlNPL)
+dwtest(mdlNPL)
+shapiro.test(mdlNPL$residuals)
+
+# a graphical test
+tsdisplay(mdlNPL$residuals)
+```
+
+
+
+# WORK WITH EVIEWS
+
+
+```{eviews}
+%path=@runpath
+cd %path
+
+wfcreate(wf=myModel, page=data) q 2013 2020
+import(resize) dataWrk.csv @freq q 2013
+
+Sspace ss1
+
+ss1.append @state se = c(11) +c(12)*se(-1) +c(13)*logcm + [var=exp(c(14))]
+ss1.append @signal lognpla = c(21) + c(22)*se+c(23)*logsid+c(24)*R + c(25)*logngdp + c(26)*bvQ1 + c(27)*bvQ2 + c(28)*bvQ3 + [var=exp(c(25))]
+
+ss1.append param c(11) 0.5 c(12) 1.5 c(13) 0.5 c(14) 1
+ss1.append param c(21) -8.25 c(22) 0.5 c(23) 0.86 c(24) 0.03 c(25) 0.86 c(26) 0.2 c(27) 0.2 c(28) 0.2
+
+
+```
+
+
+
+# DESCRIPTIVES
+
+## Graphs
+
+```{r}
+plot.ts(dfWrk[,"R"])
+```
+
+## Cointegration
+
+```{r}
+
+```
+
+## Granger causality
+
+```{r}
+grangertest(dfWrk$logSID, dfWrk$logNPLa, order=1)
+```
+
+

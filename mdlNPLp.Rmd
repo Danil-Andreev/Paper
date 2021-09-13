@@ -1,0 +1,66 @@
+---
+title: "Copula"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+library(dynlm)
+library(normtest)
+library(car) 
+library(lmtest)
+library(REndo)
+
+### Testing model for problems
+testing.model <- function(model) {
+  cat("--==Testing model==--", fill = T)
+  cat(fill = T)
+  cat("R-squared:", summary(model)$r.squared, fill = T)
+  cat("Adj. R-squared:", summary(model)$adj.r.squared, fill = T)
+  cat("AIC: ", AIC(model), fill = T)
+  cat(fill = T)
+  cat("Normality of disturbances: ", jb.norm.test(model$residuals)$p.value, fill = T)
+  cat(fill = T)
+  cat("Multicollinearity: ", max(vif(model)), fill = T)
+  cat(fill = T)
+  cat("Heteroskedasticity: ", bptest(model)$p.value, fill = T)
+  cat(fill = T)
+  cat("Autocorrelation of 1 order: ", bgtest(model)$p.value, fill = T)
+  cat(fill = T)
+  cat("RESET-test: ", reset(model)$p.value, fill = T)
+}
+```
+
+# Importing data
+
+```{r}
+dataWrkCopula <- read_csv("C://R//Data//dataWrk.csv", col_types = cols(Date = col_character()))
+dataWrkCopula$perSIDinNGDP <- dataWrkCopula$SID*100/dataWrkCopula$NGDP
+dataWrkCopula$LUNEMPL <- c(5.9, dataWrkCopula$UNEMPL[-45])
+dataWrkCopula$LNPLp <- c(1.76780823887159, dataWrkCopula$NPLp[-45])
+```
+
+# OLS model
+
+```{r}
+mdlNPLp <- lm(data=dataWrkCopula, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexNonDemocratic + indexInstitute + indexPayment + LNPLp)
+summary(mdlNPLp)
+testing.model(mdlNPLp)
+```
+
+```{r}
+mdlNPLp <- lm(data=dataWrkCopula, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
+summary(mdlNPLp)
+testing.model(mdlNPLp)
+```
+
+
+# Copula regression
+
+```{r}
+mdlCplNPLp <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexNonDemocratic + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP), num.boots = 100, data=dataWrkCopula)
+```
+
+```{r}
+mdlCplNPLp <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP), num.boots = 100, data=dataWrkCopula)
+```

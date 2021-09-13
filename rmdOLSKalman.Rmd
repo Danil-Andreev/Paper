@@ -3,7 +3,7 @@ title: "Calculations"
 author: "Evgenii Gilenko"
 ---
 
-# Libraries and data importing LALALLA
+# Libraries and data importing
 
 ```{r message=F, warning=FALSE}
 library(openxlsx)
@@ -69,6 +69,8 @@ plot.ts(dfWrk[,"R"])
 
 ```{r}
 #some cointegration function
+
+# aaaaaaaaaaand another one
 ```
 
 ## Granger causality

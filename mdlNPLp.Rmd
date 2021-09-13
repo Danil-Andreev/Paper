@@ -3,6 +3,9 @@ title: "Copula"
 output: html_notebook
 ---
 
+
+### For what extent is that ffast
+
 ```{r}
 library(readr)
 library(dynlm)

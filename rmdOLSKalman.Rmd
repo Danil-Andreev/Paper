@@ -70,7 +70,7 @@ plot.ts(dfWrk[,"R"])
 ```{r}
 #some cointegration function
 
-# aaaaaaaaaaand another one
+# so can we change directoty file from R?
 ```
 
 ## Granger causality

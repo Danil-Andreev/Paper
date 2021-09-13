@@ -68,7 +68,7 @@ plot.ts(dfWrk[,"R"])
 ## Cointegration
 
 ```{r}
-#some cointegration function
+
 ```
 
 ## Granger causality

@@ -3,7 +3,7 @@ title: "Calculations"
 author: "Evgenii Gilenko"
 ---
 
-# Libraries and data import
+# Libraries and data importing LALALLA
 
 ```{r message=F, warning=FALSE}
 library(openxlsx)

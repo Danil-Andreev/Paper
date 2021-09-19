@@ -1,5 +1,5 @@
 ---
-title: "Copula"
+title: "OLS + Copula"
 output: html_notebook
 ---
 

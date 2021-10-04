@@ -78,7 +78,8 @@ biplot(PAY_PCA, xlabs = c(rep("*", nrow(PAY_PCA$x))), col = c("#233f71","#c00000
 
 # indexDemocracy
 # домножаем всё на -1, поскольку так получим PC1 как индекс демократии
-democData <- data.frame(dataRF$GI[28:80]*(-1), dataRF$PV[28:80]*(-1), dataRF$PRR[28:80]*(-1), dataRF$CLR[28:80]*(-1), dataRF$GE[28:80]*(-1))
+# democData <- data.frame(dataRF$GI[28:80]*(-1), dataRF$PV[28:80]*(-1), dataRF$PRR[28:80]*(-1), dataRF$CLR[28:80]*(-1), dataRF$GE[28:80]*(-1))
+democData <- data.frame(dataRF$GI[28:80], dataRF$PV[28:80], dataRF$PRR[28:80], dataRF$CLR[28:80], dataRF$GE[28:80])
 colnames(democData) <- c("GI", "PV", "PRR", "CLR", "GE")
 
 INST_PCA = prcomp(democData,center = T, scale = T)

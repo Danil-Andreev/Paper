@@ -10,6 +10,7 @@ library(normtest)
 library(car) 
 library(lmtest)
 library(REndo)
+library(MLmetrics)
 
 ### Testing model for problems
 testing.model <- function(model) {
@@ -50,6 +51,7 @@ dataRF$LNPLp <- c(1.76780823887159, dataRF$NPLp[-45])
 mdlRF <- lm(data=dataRF, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
 summary(mdlRF)
 testing.model(mdlRF)
+MAPE(y_true = dataRF$NPLp, y_pred = mdlRF$fitted.values)
 ```
 
 
@@ -66,7 +68,14 @@ cplRF <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + 
 ```{r}
 options(scipen=2)
 summary(cplRF)
+MAPE(y_true = dataRF$NPLp, y_pred = cplRF$fitted.values)
 ```
+
+```{r}
+confint(cplRF, level = 0.99)
+MAPE(y_true = dataRF$NPLp, y_pred = cplRF$fitted.values)
+```
+
 
 ```{r}
 jb.norm.test(cplRF$residuals)
@@ -111,6 +120,11 @@ cplKZ <- copulaCorrection(formula =  NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocr
 options(scipen=2)
 summary(cplKZ)
 ```
+
+```{r}
+confint(cplKZ, level = 0.99)
+```
+
 
 ```{r}
 jb.norm.test(cplKZ$residuals)

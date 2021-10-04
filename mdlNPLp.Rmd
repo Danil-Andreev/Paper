@@ -29,6 +29,8 @@ testing.model <- function(model) {
   cat(fill = T)
   cat("RESET-test: ", reset(model)$p.value, fill = T)
 }
+
+
 ```
 
 # Russia
@@ -53,7 +55,11 @@ testing.model(mdlRF)
 
 ## Copula regression
 
-```{r}
+```{r include=FALSE}
+
+# Adjust randomness
+set.seed(1234)
+
 cplRF <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP, indexPayment, indexInstitute), num.boots = 10000, data=dataRF)
 ```
 
@@ -91,7 +97,13 @@ summary(mdlKZ)
 testing.model(mdlKZ)
 ```
 
-```{r}
+## Copula regression
+
+```{r include=FALSE}
+
+# Adjust randomness
+set.seed(1234)
+
 cplKZ <- copulaCorrection(formula =  NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP, indexPayment, indexInstitute), num.boots = 10000, data=dataKZ)
 ```
 

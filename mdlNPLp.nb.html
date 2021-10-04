@@ -217,15 +217,45 @@ pre code {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbmxpYnJhcnkoZHlubG0pXG5saWJyYXJ5KG5vcm10ZXN0KVxubGlicmFyeShjYXIpIFxubGlicmFyeShsbXRlc3QpXG5saWJyYXJ5KFJFbmRvKVxuXG4jIyMgVGVzdGluZyBtb2RlbCBmb3IgcHJvYmxlbXNcbnRlc3RpbmcubW9kZWwgPC0gZnVuY3Rpb24obW9kZWwpIHtcbiAgY2F0KFwiLS09PVRlc3RpbmcgbW9kZWw9PS0tXCIsIGZpbGwgPSBUKVxuICBjYXQoZmlsbCA9IFQpXG4gIGNhdChcIlItc3F1YXJlZDpcIiwgc3VtbWFyeShtb2RlbCkkci5zcXVhcmVkLCBmaWxsID0gVClcbiAgY2F0KFwiQWRqLiBSLXNxdWFyZWQ6XCIsIHN1bW1hcnkobW9kZWwpJGFkai5yLnNxdWFyZWQsIGZpbGwgPSBUKVxuICBjYXQoXCJBSUM6IFwiLCBBSUMobW9kZWwpLCBmaWxsID0gVClcbiAgY2F0KGZpbGwgPSBUKVxuICBjYXQoXCJOb3JtYWxpdHkgb2YgZGlzdHVyYmFuY2VzOiBcIiwgamIubm9ybS50ZXN0KG1vZGVsJHJlc2lkdWFscykkcC52YWx1ZSwgZmlsbCA9IFQpXG4gIGNhdChmaWxsID0gVClcbiAgY2F0KFwiTXVsdGljb2xsaW5lYXJpdHk6IFwiLCBtYXgodmlmKG1vZGVsKSksIGZpbGwgPSBUKVxuICBjYXQoZmlsbCA9IFQpXG4gIGNhdChcIkhldGVyb3NrZWRhc3RpY2l0eTogXCIsIGJwdGVzdChtb2RlbCkkcC52YWx1ZSwgZmlsbCA9IFQpXG4gIGNhdChmaWxsID0gVClcbiAgY2F0KFwiQXV0b2NvcnJlbGF0aW9uIG9mIDEgb3JkZXI6IFwiLCBiZ3Rlc3QobW9kZWwpJHAudmFsdWUsIGZpbGwgPSBUKVxuICBjYXQoZmlsbCA9IFQpXG4gIGNhdChcIlJFU0VULXRlc3Q6IFwiLCByZXNldChtb2RlbCkkcC52YWx1ZSwgZmlsbCA9IFQpXG59XG5cblxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbmxpYnJhcnkoZHlubG0pXG5gYGAifQ== -->
 <pre class="r"><code>library(readr)
-library(dynlm)
-library(normtest)
-library(car) 
-library(lmtest)
-library(REndo)
+library(dynlm)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoi0JfQsNCz0YDRg9C30LrQsCDRgtGA0LXQsdGD0LXQvNC+0LPQviDQv9Cw0LrQtdGC0LA6IHpvb1xuXG7Qn9GA0LjRgdC+0LXQtNC40L3Rj9GOINC/0LDQutC10YI6IOKAmHpvb+KAmVxuXG7QodC70LXQtNGD0Y7RidC40LUg0L7QsdGK0LXQutGC0Ysg0YHQutGA0YvRgtGLINC+0YIg4oCYcGFja2FnZTpiYXNl4oCZOlxuXG4gICAgYXMuRGF0ZSwgYXMuRGF0ZS5udW1lcmljXG5cblJlZ2lzdGVyZWQgUzMgbWV0aG9kIG92ZXJ3cml0dGVuIGJ5ICdkYXRhLnRhYmxlJzpcbiAgbWV0aG9kICAgICAgICAgICBmcm9tXG4gIHByaW50LmRhdGEudGFibGUgICAgIFxuIn0= -->
+<pre><code>Загрузка требуемого пакета: zoo
 
-### Testing model for problems
+Присоединяю пакет: ‘zoo’
+
+Следующие объекты скрыты от ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+Registered S3 method overwritten by &#39;data.table&#39;:
+  method           from
+  print.data.table     </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShub3JtdGVzdClcbmxpYnJhcnkoY2FyKSBcbmBgYCJ9 -->
+<pre class="r"><code>library(normtest)
+library(car) </code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoi0JfQsNCz0YDRg9C30LrQsCDRgtGA0LXQsdGD0LXQvNC+0LPQviDQv9Cw0LrQtdGC0LA6IGNhckRhdGFcbiJ9 -->
+<pre><code>Загрузка требуемого пакета: carData</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShsbXRlc3QpXG5saWJyYXJ5KFJFbmRvKVxuYGBgIn0= -->
+<pre class="r"><code>library(lmtest)
+library(REndo)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzog0L/QsNC60LXRgiDigJhSRW5kb+KAmSDQsdGL0Lsg0YHQvtCx0YDQsNC9INC/0L7QtCBSINCy0LXRgNGB0LjQuCA0LjAuNVxuUmVnaXN0ZXJlZCBTMyBtZXRob2RzIG92ZXJ3cml0dGVuIGJ5ICdsbWU0JzpcbiAgbWV0aG9kICAgICAgICAgICAgICAgICAgICAgICAgICBmcm9tXG4gIGNvb2tzLmRpc3RhbmNlLmluZmx1ZW5jZS5tZXJNb2QgY2FyIFxuICBpbmZsdWVuY2UubWVyTW9kICAgICAgICAgICAgICAgIGNhciBcbiAgZGZiZXRhLmluZmx1ZW5jZS5tZXJNb2QgICAgICAgICBjYXIgXG4gIGRmYmV0YXMuaW5mbHVlbmNlLm1lck1vZCAgICAgICAgY2FyIFxuIn0= -->
+<pre><code>Warning: пакет ‘REndo’ был собран под R версии 4.0.5
+Registered S3 methods overwritten by &#39;lme4&#39;:
+  method                          from
+  cooks.distance.influence.merMod car 
+  influence.merMod                car 
+  dfbeta.influence.merMod         car 
+  dfbetas.influence.merMod        car </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyMjIFRlc3RpbmcgbW9kZWwgZm9yIHByb2JsZW1zXG50ZXN0aW5nLm1vZGVsIDwtIGZ1bmN0aW9uKG1vZGVsKSB7XG4gIGNhdChcIi0tPT1UZXN0aW5nIG1vZGVsPT0tLVwiLCBmaWxsID0gVClcbiAgY2F0KGZpbGwgPSBUKVxuICBjYXQoXCJSLXNxdWFyZWQ6XCIsIHN1bW1hcnkobW9kZWwpJHIuc3F1YXJlZCwgZmlsbCA9IFQpXG4gIGNhdChcIkFkai4gUi1zcXVhcmVkOlwiLCBzdW1tYXJ5KG1vZGVsKSRhZGouci5zcXVhcmVkLCBmaWxsID0gVClcbiAgY2F0KFwiQUlDOiBcIiwgQUlDKG1vZGVsKSwgZmlsbCA9IFQpXG4gIGNhdChmaWxsID0gVClcbiAgY2F0KFwiTm9ybWFsaXR5IG9mIGRpc3R1cmJhbmNlczogXCIsIGpiLm5vcm0udGVzdChtb2RlbCRyZXNpZHVhbHMpJHAudmFsdWUsIGZpbGwgPSBUKVxuICBjYXQoZmlsbCA9IFQpXG4gIGNhdChcIk11bHRpY29sbGluZWFyaXR5OiBcIiwgbWF4KHZpZihtb2RlbCkpLCBmaWxsID0gVClcbiAgY2F0KGZpbGwgPSBUKVxuICBjYXQoXCJIZXRlcm9za2VkYXN0aWNpdHk6IFwiLCBicHRlc3QobW9kZWwpJHAudmFsdWUsIGZpbGwgPSBUKVxuICBjYXQoZmlsbCA9IFQpXG4gIGNhdChcIkF1dG9jb3JyZWxhdGlvbiBvZiAxIG9yZGVyOiBcIiwgYmd0ZXN0KG1vZGVsKSRwLnZhbHVlLCBmaWxsID0gVClcbiAgY2F0KGZpbGwgPSBUKVxuICBjYXQoXCJSRVNFVC10ZXN0OiBcIiwgcmVzZXQobW9kZWwpJHAudmFsdWUsIGZpbGwgPSBUKVxufVxuXG5cbmBgYCJ9 -->
+<pre class="r"><code>### Testing model for problems
 testing.model &lt;- function(model) {
   cat(&quot;--==Testing model==--&quot;, fill = T)
   cat(fill = T)
@@ -300,14 +330,14 @@ F-statistic: 120.9 on 7 and 37 DF,  p-value: &lt; 2.2e-16</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdGluZy5tb2RlbChtZGxSRilcbmBgYCJ9 -->
 <pre class="r"><code>testing.model(mdlRF)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiLS09PVRlc3RpbmcgbW9kZWw9PS0tXG5cblItc3F1YXJlZDogMC45NTgxMjE0XG5BZGouIFItc3F1YXJlZDogMC45NTAxOTg0XG5BSUM6ICAxMC4wODM0MVxuXG5Ob3JtYWxpdHkgb2YgZGlzdHVyYmFuY2VzOiAgMC40ODA1XG5cbk11bHRpY29sbGluZWFyaXR5OiAgMjEuNzExNFxuXG5IZXRlcm9za2VkYXN0aWNpdHk6ICAwLjY4MjU5MTFcblxuQXV0b2NvcnJlbGF0aW9uIG9mIDEgb3JkZXI6ICAwLjM0MjQ4NFxuXG5SRVNFVC10ZXN0OiAgMC44MTU1NzAyXG4ifQ== -->
+<!-- rnb-output-begin eyJkYXRhIjoiLS09PVRlc3RpbmcgbW9kZWw9PS0tXG5cblItc3F1YXJlZDogMC45NTgxMjE0XG5BZGouIFItc3F1YXJlZDogMC45NTAxOTg0XG5BSUM6ICAxMC4wODM0MVxuXG5Ob3JtYWxpdHkgb2YgZGlzdHVyYmFuY2VzOiAgMC40OFxuXG5NdWx0aWNvbGxpbmVhcml0eTogIDIxLjcxMTRcblxuSGV0ZXJvc2tlZGFzdGljaXR5OiAgMC42ODI1OTExXG5cbkF1dG9jb3JyZWxhdGlvbiBvZiAxIG9yZGVyOiAgMC4zNDI0ODRcblxuUkVTRVQtdGVzdDogIDAuODE1NTcwMlxuIn0= -->
 <pre><code>--==Testing model==--
 
 R-squared: 0.9581214
 Adj. R-squared: 0.9501984
 AIC:  10.08341
 
-Normality of disturbances:  0.4805
+Normality of disturbances:  0.48
 
 Multicollinearity:  21.7114
 

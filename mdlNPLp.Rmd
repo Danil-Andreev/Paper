@@ -1,5 +1,5 @@
 ---
-title: "OLS + Copula"
+title: "Copula"
 output: html_notebook
 ---
 
@@ -31,36 +31,80 @@ testing.model <- function(model) {
 }
 ```
 
-# Importing data
+# Russia
+
+## Importing data
 
 ```{r}
-dataWrkCopula <- read_csv("C://R//Data//dataWrk.csv", col_types = cols(Date = col_character()))
-dataWrkCopula$perSIDinNGDP <- dataWrkCopula$SID*100/dataWrkCopula$NGDP
-dataWrkCopula$LUNEMPL <- c(5.9, dataWrkCopula$UNEMPL[-45])
-dataWrkCopula$LNPLp <- c(1.76780823887159, dataWrkCopula$NPLp[-45])
+dataRF <- read_csv("C://R//Data//dataRF.csv", col_types = cols(Date = col_character()))
+dataRF$perSIDinNGDP <- dataRF$SID*100/dataRF$NGDP
+dataRF$LUNEMPL <- c(5.9, dataRF$UNEMPL[-45])
+dataRF$LNPLp <- c(1.76780823887159, dataRF$NPLp[-45])
 ```
 
-# OLS model
+## OLS model
 
 ```{r}
-mdlNPLp <- lm(data=dataWrkCopula, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexNonDemocratic + indexInstitute + indexPayment + LNPLp)
-summary(mdlNPLp)
-testing.model(mdlNPLp)
-```
-
-```{r}
-mdlNPLp <- lm(data=dataWrkCopula, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
-summary(mdlNPLp)
-testing.model(mdlNPLp)
+mdlRF <- lm(data=dataRF, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
+summary(mdlRF)
+testing.model(mdlRF)
 ```
 
 
-# Copula regression
+## Copula regression
 
 ```{r}
-mdlCplNPLp <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexNonDemocratic + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP), num.boots = 100, data=dataWrkCopula)
+cplRF <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP, indexPayment, indexInstitute), num.boots = 10000, data=dataRF)
 ```
 
 ```{r}
-mdlCplNPLp <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP), num.boots = 100, data=dataWrkCopula)
+options(scipen=2)
+summary(cplRF)
+```
+
+```{r}
+jb.norm.test(cplRF$residuals)
+acf(cplRF$residuals)
+bptest(cplRF)
+bgtest(cplRF, order = 2)
+bptest(cplRF)
+reset(cplRF)
+```
+
+# Kazakhstan
+
+## Importing data
+
+```{r}
+dataKZ <- read_csv("C://R//Data//dataKZ.csv", col_types = cols(Date = col_character()))
+dataKZ$perSIDinNGDP <- dataKZ$SID*100/dataKZ$NGDP
+dataKZ$LUNEMPL <- c(5.5, dataKZ$Unempl[-36])
+dataKZ$LNPLp <- c(14.6071858314849, dataKZ$NPLp[-36])
+```
+
+
+## OLS model
+
+```{r}
+mdlKZ <- lm(data=dataKZ, formula = NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
+summary(mdlKZ)
+testing.model(mdlKZ)
+```
+
+```{r}
+cplKZ <- copulaCorrection(formula =  NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP, indexPayment, indexInstitute), num.boots = 10000, data=dataKZ)
+```
+
+```{r}
+options(scipen=2)
+summary(cplKZ)
+```
+
+```{r}
+jb.norm.test(cplKZ$residuals)
+acf(cplKZ$residuals)
+bptest(cplKZ)
+bgtest(cplKZ, order = 2)
+bptest(cplKZ)
+reset(cplKZ)
 ```

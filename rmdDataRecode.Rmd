@@ -52,6 +52,9 @@ rm(BOB, ie)
 INST_PCA = prcomp(dataRF[4:80, 6:11], scale = F, center = F)
 dataRF$indexInstitute = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 7))
 
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexInstitute")
+
+
 # indexNonDemocratic & indexBureau
 INST_PCA = prcomp(dataRF[4:80, 6:11], scale = F, center = T)
 dataRF$indexNonDemocratic = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 7))
@@ -65,17 +68,23 @@ downwardPca = prcomp(data.frame(dataRF$VA, dataRF$RQ)[4:80,])
 dataRF$pcDownward = c(rep(NA, 3), downwardPca$x[,1], rep(NA, 7))
 
 # indexPayment
-PAY_PCA = prcomp(data.frame(dataRF$ALLCARDS[33:85], dataRF$PAYCARDS[33:85],
-                     dataRF$TERMIN1[33:85], dataRF$ATM[33:85]), scale = T, center = T)
+payData <- data.frame(dataRF$ALLCARDS[33:85],
+                     dataRF$TERMIN1[33:85], dataRF$ATM[33:85])
+colnames(payData) <- c("AllCards", "Terminals", "ATMs")
+PAY_PCA = prcomp(payData, scale = T, center = T)
 dataRF$indexPayment = c(rep(NA, 32), PAY_PCA$x[,1], rep(NA, 2))
 
-# indexDemocracy
-INST_PCA = prcomp(data.frame(dataRF$GI[28:80], dataRF$PV[28:80], dataRF$PRR[28:80],                        dataRF$CLR[28:80], dataRF$GE[28:80]),
-                  center = T, scale = T)
-# INST_PCA = prcomp(data.frame(dataRF$PRR[28:80], dataRF$CLR[28:80]), 
-#                  center = F, scale = F)
-dataRF$indexDemocracy = c(rep(NA, 27), INST_PCA$x[,1]*(-1), rep(NA, 7))
+biplot(PAY_PCA, xlabs = c(rep("*", nrow(PAY_PCA$x))), col = c("#233f71","#c00000"), main="indexPayment")
 
+# indexDemocracy
+# домножаем всё на -1, поскольку так получим PC1 как индекс демократии
+democData <- data.frame(dataRF$GI[28:80]*(-1), dataRF$PV[28:80]*(-1), dataRF$PRR[28:80]*(-1), dataRF$CLR[28:80]*(-1), dataRF$GE[28:80]*(-1))
+colnames(democData) <- c("GI", "PV", "PRR", "CLR", "GE")
+
+INST_PCA = prcomp(democData,center = T, scale = T)
+dataRF$indexDemocracy = c(rep(NA, 27), INST_PCA$x[,1], rep(NA, 7))
+
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexDemocracy")
 rm(INST_PCA, PAY_PCA, downwardPca, upwardPca)
 ```
 
@@ -200,7 +209,7 @@ dataKZ$GI <- c(rep(NA, 3), coredata(na.approx(zoo(dataKZ$GI[4:87]))))
 ```{r}
 # indexInstitute !!!!
 INST_PCA = prcomp(dataKZ[4:80, 9:14], scale = F, center = F)
-biplot(INST_PCA)
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexInstitute")
 dataKZ$indexInstitute = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 7))
 
 # indexNonDemocratic & indexBureau !!!!
@@ -210,14 +219,21 @@ dataKZ$indexNonDemocratic = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 7))
 dataKZ$indexBureau = c(rep(NA, 3), INST_PCA$x[,2], rep(NA, 7))
 
 # indexPayment
-PAY_PCA = prcomp(data.frame(dataKZ$ALLCARDS[20:86],
-                     dataKZ$TERMIN1[20:86], dataKZ$ATM[20:86]), scale = T, center = T)
-biplot(PAY_PCA)
+payData <- data.frame(dataKZ$ALLCARDS[20:86],dataKZ$TERMIN1[20:86], dataKZ$ATM[20:86])
+colnames(payData) <- c("AllCards", "Terminals", "ATMs")
+
+PAY_PCA = prcomp(payData, scale = T, center = T)
+biplot(PAY_PCA, xlabs = c(rep("*", nrow(PAY_PCA$x))), col = c("#233f71","#c00000"), main="indexPayment")
+
 dataKZ$indexPayment = c(rep(NA, 19), PAY_PCA$x[,1], rep(NA, 1))
 
 # indexDemocracy!!!
-INST_PCA = prcomp(data.frame(dataKZ$GI[28:80], dataKZ$PV[28:80], dataKZ$PRR[28:80], dataKZ$GE[28:80]), center = T, scale = T)
-biplot(INST_PCA)
+democData <- data.frame(dataKZ$GI[28:80], dataKZ$PV[28:80], dataKZ$PRR[28:80], dataKZ$GE[28:80])
+colnames(democData) <- c("GI", "PV", "PRR","GE")
+
+INST_PCA = prcomp(democData, center = T, scale = T)
+
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexDemocracy")
 
 dataKZ$indexDemocracy = c(rep(NA, 27), INST_PCA$x[,1]*(-1), rep(NA, 7))
 ```

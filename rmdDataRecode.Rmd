@@ -48,24 +48,16 @@ rm(BOB, ie)
 ## Generating PCs
 
 ```{r}
-# indexInstitute 
+# indexInstitute
 INST_PCA = prcomp(dataRF[4:80, 6:11], scale = F, center = F)
 dataRF$indexInstitute = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 7))
 
 biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexInstitute")
 
-
 # indexNonDemocratic & indexBureau
 INST_PCA = prcomp(dataRF[4:80, 6:11], scale = F, center = T)
 dataRF$indexNonDemocratic = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 7))
 dataRF$indexBureau = c(rep(NA, 3), INST_PCA$x[,2], rep(NA, 7))
-
-# pcUpward1, pcUpward2 & pcDownward
-upwardPca = prcomp(data.frame(dataRF$GE, dataRF$CC, dataRF$PV, dataRF$RL)[4:80,])
-dataRF$pcUpward1 = c(rep(NA, 3), upwardPca$x[,1], rep(NA, 7))
-dataRF$pcUpward2 = c(rep(NA, 3), upwardPca$x[,2], rep(NA, 7))
-downwardPca = prcomp(data.frame(dataRF$VA, dataRF$RQ)[4:80,])
-dataRF$pcDownward = c(rep(NA, 3), downwardPca$x[,1], rep(NA, 7))
 
 # indexPayment
 payData <- data.frame(dataRF$ALLCARDS[33:85],
@@ -99,10 +91,10 @@ rm(dataRF)
 
 ```{r}
 # choose columns from quarterly data
-names = c("Date", "NGDP", "WSGDP", "COFS", "Tax", "DR", "DCPS", "AGRO", "GREV", 
+names = c("Date", "NGDP", "WSGDP", "COFS", "Tax", "DR", "DCPS", "AGRO", "GREV",
           "GEXP", "taxProfit", "energyTotal", "energyPopul", "energyPrice",
           "indexInstitute", "indexNonDemocratic", "indexBureau", "pcUpward1",
-          "pcUpward2", "pcDownward", "indexPayment", "indexDemocracy", "UNEMPL", "INFL")
+          "pcUpward2", "pcDownward", "indexPayment", "indexDemocracy", "UNEMPL", "INFL", "RealInc")
 dfAll <- dfQ[, names]
 rm(names)
 ```
@@ -119,7 +111,7 @@ for(i in 1:nrow(dfAll)){
   if(lstch=="1"){dfAll$bvQ1[i] <- 1}
   if(lstch=="2"){dfAll$bvQ2[i] <- 1}
   if(lstch=="3"){dfAll$bvQ3[i] <- 1}
-  
+
 } # end for i
 
 # BV for 2014-2015 CRISIS
@@ -139,6 +131,12 @@ idxQe <- seq(from=4, to=259, by=3)
 ```
 
 ```{r}
+# M1
+dfAll$M1 <- dfM$M1[idxQe]
+
+# M2
+dfAll$M2 <- dfM$M2[idxQe]
+
 # M2
 dfAll$M2 <- dfM$M2[idxQe]
 
@@ -168,8 +166,6 @@ dfAll$CM <- dfQ$COFS*100/dfM$M2[idxQe]
 dfAll$vTax <- dfQ$Tax*dfQ$NGDP/100
 ```
 
-
-## SAVE THE DATA
 
 ```{r}
 dfWrk <- na.omit(dfAll)
@@ -250,10 +246,10 @@ rm(dataKZ)
 
 ```{r}
 # choose columns from quarterly data
-names = c("Date", "NGDP", "WSGDP", "COFS", "Slr", "AGRO", "GREV", 
+names = c("Date", "NGDP", "WSGDP", "COFS", "Slr", "AGRO", "GREV",
           "GEXP", "taxProfit", "CH", "SID", "SED", "NPLa", "NPLp",
           "indexInstitute", "indexNonDemocratic", "indexBureau",
-           "indexPayment", "indexDemocracy", "Unempl", "INFL")
+           "indexPayment", "indexDemocracy", "Unempl", "INFL", "RealInc")
 dfAll <- dfQ[, names]
 rm(names)
 ```
@@ -272,7 +268,7 @@ dfAll$M2 <- c(dfM$M2[idxQe], NA)
 # M0
 dfAll$M0 <- c(dfM$M0[idxQe], NA)
 
-# DR переделать!!!!
+# DR
 dfAll$DR <- c(dfM$DR[idxQe], NA)
 ```
 
@@ -284,4 +280,69 @@ dfAll$CM <- dfQ$COFS*100/dfM$M2[idxQe]
 ```{r}
 dfWrk <- na.omit(dfAll)
 write.csv(dfWrk, file="dataKZ.csv", row.names = F, quote = F)
+```
+
+# Belarus
+
+```{r message=FALSE, warning=FALSE}
+dataRB <- read_excel("dataRB.xlsx", sheet = "dataQ")
+dataRB$COFS <- dataRB$COFS
+```
+
+## Interpolation
+
+```{r}
+dataRB$DCPS <- c(rep(NA, 31), coredata(na.approx(zoo(dataRB$DCPS[31:84]))), rep(NA, 3))
+dataRB$AGRO <- c(rep(NA, 23), coredata(na.approx(zoo(dataRB$AGRO[24:84]))), rep(NA, 3))
+dataRB$GREV <- c(rep(NA, 31), coredata(na.approx(zoo(dataRB$GREV[32:87]))))
+dataRB$GEXP <- c(rep(NA, 31), coredata(na.approx(zoo(dataRB$GEXP[32:87]))))
+dataRB$energyTotal <- c(rep(NA, 31), coredata(na.approx(zoo(dataRB$energyTotal[32:84]))), rep(NA, 3))
+dataRB$energyPopul <- c(rep(NA, 39), coredata(na.approx(zoo(dataRB$energyPopul[40:84]))), rep(NA, 3))
+dataRB$energyPrice <- c(rep(NA, 23), coredata(na.approx(zoo(dataRB$energyPrice[24:80]))), rep(NA, 7))
+dataRB$iloUnempl <- c(rep(NA, 23), coredata(na.approx(zoo(dataRB$iloUnempl[24:84]))), rep(NA, 3))
+dataRB$taxProfit <- c(rep(NA, 31), coredata(na.approx(zoo(dataRB$taxProfit[24:87]))))
+
+for (ie in colnames(dataRB)[7:12]){
+  BOB <- zoo(dataRB[[ie]])
+  BOB <- na.approx(BOB)
+  dataRB[[ie]] = c(rep(NA, 27), coredata(BOB), rep(NA, 3))
+}
+
+rm(BOB, ie)
+```
+
+## Generating PCs
+
+```{r}
+# indexInstitute
+INST_PCA = prcomp(dataRB[28:84, 7:12], scale = F, center = F)
+dataRB$indexInstitute = c(rep(NA, 27), INST_PCA$x[,1], rep(NA, 3))
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexInstitute")
+
+# indexNonDemocratic & indexBureau
+INST_PCA = prcomp(dataRB[28:84, 7:12], scale = F, center = T)
+dataRB$indexNonDemocratic = c(rep(NA, 27), INST_PCA$x[,1], rep(NA, 3))
+dataRB$indexBureau = c(rep(NA, 27), INST_PCA$x[,2], rep(NA, 3))
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexInstitute")
+
+# indexPayment
+payData <- data.frame(dataRB$ALLCARDS[33:85],
+                     dataRB$TERMIN1[33:85], dataRB$ATM[33:85])
+colnames(payData) <- c("AllCards", "Terminals", "ATMs")
+PAY_PCA = prcomp(payData, scale = T, center = T)
+dataRB$indexPayment = c(rep(NA, 32), PAY_PCA$x[,1], rep(NA, 2))
+
+biplot(PAY_PCA, xlabs = c(rep("*", nrow(PAY_PCA$x))), col = c("#233f71","#c00000"), main="indexPayment")
+
+# indexDemocracy
+# домножаем всё на -1, поскольку так получим PC1 как индекс демократии
+# democData <- data.frame(dataRB$GI[28:80]*(-1), dataRB$PV[28:80]*(-1), dataRB$PRR[28:80]*(-1), dataRB$CLR[28:80]*(-1), dataRB$GE[28:80]*(-1))
+democData <- data.frame(dataRB$GI[28:80], dataRB$PV[28:80], dataRB$PRR[28:80], dataRB$CLR[28:80], dataRB$GE[28:80])
+colnames(democData) <- c("GI", "PV", "PRR", "CLR", "GE")
+
+INST_PCA = prcomp(democData,center = T, scale = T)
+dataRB$indexDemocracy = c(rep(NA, 27), INST_PCA$x[,1], rep(NA, 7))
+
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), main="indexDemocracy")
+rm(INST_PCA, PAY_PCA, downwardPca, upwardPca)
 ```

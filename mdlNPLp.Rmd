@@ -1,9 +1,11 @@
 ---
 title: "Copula"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(readr)
 library(dynlm)
 library(normtest)
@@ -11,8 +13,16 @@ library(car)
 library(lmtest)
 library(REndo)
 library(MLmetrics)
+library(gcmr)
+options(scipen=4)
 
-### Testing model for problems
+library(plm) # plm
+library(gplots) # plotmeans
+library(psych) # describeBy
+```
+
+```{r}
+###--Testing model for problems
 testing.model <- function(model) {
   cat("--==Testing model==--", fill = T)
   cat(fill = T)
@@ -21,110 +31,126 @@ testing.model <- function(model) {
   cat("AIC: ", AIC(model), fill = T)
   cat(fill = T)
   cat("Normality of disturbances: ", jb.norm.test(model$residuals)$p.value, fill = T)
-  cat(fill = T)
   cat("Multicollinearity: ", max(vif(model)), fill = T)
-  cat(fill = T)
   cat("Heteroskedasticity: ", bptest(model)$p.value, fill = T)
-  cat(fill = T)
   cat("Autocorrelation of 1 order: ", bgtest(model)$p.value, fill = T)
-  cat(fill = T)
   cat("RESET-test: ", reset(model)$p.value, fill = T)
 }
+```
 
-
+```{r}
+###--Choosing the panel model (RE-FE-pooled)
+choose_panel <- function(){
+  # F-test (Pooled VS FE-model)
+  if (pFtest(formulaP, dataP, type="individual")$p.value>=0.05){
+    # Breusch-Pagan test (Pooled VS RE-model)
+    if (plmtest(plm(formulaP, dataP, model="pooling"), 
+                effect="twoways", type="bp")$p.value>=0.05){
+      return("Choose pooled model")
+    }else{
+      return("Choose RE-model")}
+  }else{
+    # Hausman-test (RE-model VS FE-model)
+    if (phtest(plm(formulaP, dataP, model="within"), 
+               plm(formulaP, dataP, model="random", 
+                   random.method = "walhus"))$p.value>=0.05){
+      return("Choose RE-model")
+    }else{
+      return("Choose FE-model")
+    }
+  }
+}
 ```
 
 # Russia
 
-## Importing data
+##--Importing data
 
 ```{r}
-dataRF <- read_csv("C://R//Data//dataRF.csv", col_types = cols(Date = col_character()))
-dataRF$perSIDinNGDP <- dataRF$SID*100/dataRF$NGDP
+dataRF <- read_csv("dataRF.csv", col_types = cols(Date = col_character()))
+dataRF$perSIDinNGDP <- dataRF$SID*100/(dataRF$NGDP*4)
 dataRF$LUNEMPL <- c(5.9, dataRF$UNEMPL[-45])
 dataRF$LNPLp <- c(1.76780823887159, dataRF$NPLp[-45])
 ```
 
-## OLS model
+##--OLS model
 
 ```{r}
-mdlRF <- lm(data=dataRF, formula = NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
+formula <- NPLp~UNEMPL + I(UNEMPL^2)+bvCrisis+perSIDinNGDP+indexDemocracy+indexInstitute+indexPayment+LNPLp + bvQ1 + bvQ2 +bvQ3
+mdlRF <- lm(data=dataRF, formula=formula)
 summary(mdlRF)
 testing.model(mdlRF)
-MAPE(y_true = dataRF$NPLp, y_pred = mdlRF$fitted.values)
+cat("MAPE: ", MAPE(y_true=dataRF$NPLp, y_pred=mdlRF$fitted.values),fill = T)
 ```
 
 
-## Copula regression
+##--Copula regression
 
-```{r include=FALSE}
-
+```{r}
 # Adjust randomness
 set.seed(1234)
-
-cplRF <- copulaCorrection(formula =  NPLp ~ LUNEMPL + bvCrisis + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP, indexPayment, indexInstitute), num.boots = 10000, data=dataRF)
-```
-
-```{r}
-options(scipen=2)
+# Upgrade initial OLS formula to copula
+formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
+                   " | continuous(perSIDinNGDP, indexPayment, indexInstitute)"))
+cplRF <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataRF)
 summary(cplRF)
-MAPE(y_true = dataRF$NPLp, y_pred = cplRF$fitted.values)
 ```
-
 ```{r}
-confint(cplRF, level = 0.99)
-MAPE(y_true = dataRF$NPLp, y_pred = cplRF$fitted.values)
+summary(cplRF)
 ```
-
 
 ```{r}
 jb.norm.test(cplRF$residuals)
 acf(cplRF$residuals)
 bptest(cplRF)
-bgtest(cplRF, order = 2)
+bgtest(cplRF, order = 1)
 bptest(cplRF)
 reset(cplRF)
+cat("MAPE: ", MAPE(y_true=dataRF$NPLp, y_pred=cplRF$fitted.values),fill = T)
 ```
+
+
+##--Comparison of simulation results
+
+```{r}
+tab <- matrix(c(c(mdlRF$coefficients, rep(NA,3)), cplRF$coefficients), ncol=2)
+colnames(tab) <- c("OLS", "Copula")
+rownames(tab) <- cplRF$names.main.coefs
+tab
+```
+
 
 # Kazakhstan
 
-## Importing data
+##--Importing data
 
 ```{r}
-dataKZ <- read_csv("C://R//Data//dataKZ.csv", col_types = cols(Date = col_character()))
+dataKZ <- read_csv("dataKZ.csv", col_types = cols(Date = col_character()))
 dataKZ$perSIDinNGDP <- dataKZ$SID*100/dataKZ$NGDP
 dataKZ$LUNEMPL <- c(5.5, dataKZ$Unempl[-36])
 dataKZ$LNPLp <- c(14.6071858314849, dataKZ$NPLp[-36])
 ```
 
 
-## OLS model
+##--OLS model
 
 ```{r}
-mdlKZ <- lm(data=dataKZ, formula = NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp)
+formula <- NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp + + bvQ1 + bvQ2 +bvQ3
+mdlKZ <- lm(data=dataKZ, formula = formula)
 summary(mdlKZ)
 testing.model(mdlKZ)
 ```
 
-## Copula regression
+##--Copula regression
 
-```{r include=FALSE}
-
-# Adjust randomness
+```{r}
 set.seed(1234)
 
-cplKZ <- copulaCorrection(formula =  NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp | continuous(perSIDinNGDP, indexPayment, indexInstitute), num.boots = 10000, data=dataKZ)
-```
-
-```{r}
-options(scipen=2)
+formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
+                   " | continuous(perSIDinNGDP, indexPayment, indexInstitute)"))
+cplKZ <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataKZ)
 summary(cplKZ)
 ```
-
-```{r}
-confint(cplKZ, level = 0.99)
-```
-
 
 ```{r}
 jb.norm.test(cplKZ$residuals)
@@ -134,3 +160,258 @@ bgtest(cplKZ, order = 2)
 bptest(cplKZ)
 reset(cplKZ)
 ```
+
+##--Comparison of simulation results
+
+```{r}
+tab <- matrix(c(c(mdlKZ$coefficients, rep(NA,3)), cplKZ$coefficients), ncol=2)
+colnames(tab) <- c("OLS", "Copula")
+rownames(tab) <- cplKZ$names.main.coefs
+tab
+```
+
+
+# Belarus
+
+##--Importing data
+
+```{r}
+dataRB <- read_csv("C://R//Data//PaperGit//Paper//dataRB.csv", col_types = cols(Date = col_character()))
+dataRB$perSIDinNGDP <- dataRB$SID*100/dataRB$NGDP
+dataRB$LNPLp <- c(1.09, dataRB$NPLp[-45])
+```
+
+
+##--OLS model
+
+```{r}
+colnames(dataRB)
+```
+
+
+```{r}
+formula <- NPLp ~ iloUnempl + I(iloUnempl^2) + perSIDinNGDP + indexInstitute + indexBureau + indexPayment+ LNPLp + indexDemocracy + I(GREV*100/NGDP) + I(GEXP*100/NGDP) + Tax+ bvQ1 + bvQ2 + bvQ3 
+mdlRB <- lm(data=dataRB, formula = formula)
+summary(mdlRB)
+testing.model(mdlRB)
+```
+
+
+
+##--Copula regression
+
+```{r include=FALSE}
+
+# Adjust randomness
+set.seed(1234)
+formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
+                   " | continuous(perSIDinNGDP, indexPayment, indexInstitute)"))
+
+cplRB <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataRB)
+```
+
+```{r}
+summary(cplRB)
+```
+
+```{r}
+jb.norm.test(cplRB$residuals)
+acf(cplRB$residuals)
+bptest(cplRB)
+bgtest(cplRB, order = 2)
+reset(cplRB)
+```
+
+##--Comparison of simulation results
+
+```{r}
+tab <- matrix(c(c(mdlRB$coefficients, rep(NA,3)), cplRB$coefficients), ncol=2)
+colnames(tab) <- c("OLS", "Copula")
+rownames(tab) <- cplRB$names.main.coefs
+tab
+```
+
+
+# Kyrgyzstan
+
+##--Importing data
+
+```{r}
+dataKG <- read_csv("C://R//Data//PaperGit//Paper//dataKG.csv", col_types = cols(Date = col_character()))
+dataKG$perSIDinNGDP <- dataKG$SID*100/dataKG$NGDP
+```
+
+##--OLS model
+
+```{r}
+colnames(dataKG)
+```
+
+
+```{r}
+formula <- NPLp ~ perSIDinNGDP + I(GREV*100/NGDP) + I(GEXP*100/NGDP) +WSGDP + Unempl + indexBureau  + indexDemocracy + indexInstitute + indexPayment + bvQ1 + bvQ2 +bvQ3
+mdlKG <- lm(data=dataKG, formula = formula)
+summary(mdlKG)
+testing.model(mdlKG)
+```
+
+##--Copula regression
+
+```{r include=FALSE}
+
+# Adjust randomness
+set.seed(1234)
+formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
+                   " | continuous(perSIDinNGDP, indexPayment, indexInstitute)"))
+cplKG <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataKG)
+```
+
+```{r}
+summary(cplKG)
+```
+
+##--Comparison of simulation results
+
+```{r}
+tab <- matrix(c(c(mdlKG$coefficients, rep(NA,3)), cplKG$coefficients), ncol=2)
+colnames(tab) <- c("OLS", "Copula")
+rownames(tab) <- cplKG$names.main.coefs
+tab
+```
+
+
+
+# Panel OLS
+
+##--Importing and formatting the data
+
+```{r}
+columns <- c("Date", "Country", "NGDP", "WSGDP", "Tax", "DR", "AGRO", "GREV", 
+             "GEXP", "indexInstitute", "indexBureau", "indexPayment", 
+             "indexDemocracy", "Unempl", "bvQ1", "bvQ2", "bvQ3", "M2", "M0",
+             "CH", "NPLa", "NPLp", "SID", "CM", "perSIDinNGDP", "LNPLp", 
+             "CountryID")
+
+# Russia
+dataRF <- read_csv("C://R//Data//PaperGit//Paper//dataRF.csv", col_types = cols(Date = col_character()))
+dataRF$perSIDinNGDP <- dataRF$SID*100/dataRF$NGDP
+dataRF$LUNEMPL <- c(5.9, dataRF$UNEMPL[-48])
+dataRF$LNPLp <- c(1.76780823887159, dataRF$NPLp[-48])
+dataRF <- dataRF[9:48,]
+colnames(dataRF)[19] <- "Unempl"
+dataRF$Country <- c(rep("Russia", 40))
+dataRF$CountryID <- c(rep(0, 40))
+dataRF <- dataRF[columns]
+
+# Kazakhstan
+dataKZ <- read_csv("C://R//Data//PaperGit//Paper//dataKZ.csv", col_types = cols(Date = col_character()))
+dataKZ$perSIDinNGDP <- dataKZ$SID*100/dataKZ$NGDP
+dataKZ$LUNEMPL <- c(5.5, dataKZ$Unempl[-40])
+dataKZ$LNPLp <- c(14.6071858314849, dataKZ$NPLp[-40])
+dataKZ$Country <- c(rep("Kazakhstan", 40))
+dataKZ$CountryID <- c(rep(1, 40))
+dataKZ <- dataKZ[columns]
+
+# Belarus
+dataRB <- read_csv("C://R//Data//PaperGit//Paper//dataRB.csv", col_types = cols(Date = col_character()))
+dataRB$perSIDinNGDP <- dataRB$SID*100/dataRB$NGDP
+dataRB$LNPLp <- c(1.09, dataRB$NPLp[-45])
+dataRB <- dataRB[6:45,]
+colnames(dataRB)[17] <- "Unempl"
+dataRB$Country <- c(rep("Belarus", 40))
+dataRB$CountryID <- c(rep(2, 40))
+dataRB <- dataRB[columns]
+
+# Kyrgyzstan
+dataKG <- read_csv("C://R//Data//PaperGit//Paper//dataKG.csv", col_types = cols(Date = col_character()))
+dataKG$perSIDinNGDP <- dataKG$SID*100/dataKG$NGDP
+dataKG$LNPLp <- c(NA, dataKG$NPLp[-49])
+dataKG <- dataKG[10:49,]
+dataKG$Country <- c(rep("Kyrgyzstan", 40))
+dataKG$CountryID <- c(rep(3, 40))
+dataKG <- dataKG[columns]
+rm(columns)
+
+# Applying to the panel
+dataPanel <- rbind(dataRF, dataKZ, dataRB, dataKG)
+dataPanel <- pdata.frame(dataPanel, index=c("Country", "Date"))
+rm(dataRF, dataKZ, dataRB, dataKG)
+```
+
+```{r}
+pdim(dataPanel)
+summary(dataPanel)
+```
+
+##--Entering the formula
+
+```{r}
+frm <- NPLp~Unempl + I(Unempl^2)+perSIDinNGDP+indexDemocracy+indexInstitute+indexPayment+indexBureau+LNPLp + bvQ1 + bvQ2 +bvQ3
+```
+
+##--Choosing the panel model (RE-FE-pooled) 
+
+```{r}
+dataP= dataPanel
+formulaP= frm
+choose_panel()
+rm(dataP, formulaP)
+```
+
+##--The pooled model estimation
+
+```{r pooled model}
+mdlPooled <- plm(frm, data=dataPanel, model="pooling")
+summary(mdlPooled)
+testing.model(mdlPooled)
+# the Wooldridge's test for unobserved effects
+pwtest(mdlPooled, effect = c("individual"))
+```
+
+##--FE-model
+
+```{r FEmodel}
+mdlFE <- plm(frm, data=dataPanel, model="within")
+
+# FE-model summary 
+summary(mdlFE)
+
+# The Wald test for overall significance
+pwaldtest(mdlFE)
+
+acf(mdlFE$residuals)
+jb.norm.test(mdlFE$residuals)
+
+# extract the fixed effects
+summary(fixef(mdlFE))
+```
+
+
+##--RE-model
+
+```{r REmodel}
+mdlRE <- plm(frm, data=dataPanel, model="random", random.method = "walhus")
+
+# RE-model summary 
+summary(mdlRE)
+
+# The Wald test for overall significance
+pwaldtest(mdlRE)
+```
+
+# Panel copulas
+
+```{r}
+frm <- NPLp~Unempl + I(Unempl^2)+perSIDinNGDP+indexDemocracy+indexInstitute+indexPayment+indexBureau+LNPLp + bvQ1 + bvQ2 +bvQ3 
+```
+
+```{r}
+mdlCopulaPanel <- gcmr(frm, dataPanel, marginal = gaussian.marg,
+                       cormat = cluster.cormat(CountryID, "ar1"),
+     options=gcmr.options(seed=123, nrep=10000))
+```
+
+```{r}
+summary(mdlCopulaPanel)
+```
+

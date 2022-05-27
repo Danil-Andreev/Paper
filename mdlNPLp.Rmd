@@ -5,7 +5,7 @@ output:
     df_print: paged
 ---
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 library(readr)
 library(dynlm)
 library(normtest)
@@ -76,7 +76,18 @@ dataRF$LNPLp <- c(1.76780823887159, dataRF$NPLp[-45])
 ##--OLS model
 
 ```{r}
-formula <- NPLp~UNEMPL + I(UNEMPL^2)+bvCrisis+perSIDinNGDP+indexDemocracy+indexInstitute+indexPayment+LNPLp + bvQ1 + bvQ2 +bvQ3
+formula <- NPLp~
+            #UNEMPL + 
+            #I(UNEMPL^2)+
+            #bvCrisis+
+            perSIDinNGDP+
+            indexDemocracy+
+            indexInstitute+
+            indexPayment+
+            LNPLp + 
+            bvQ1 + 
+            bvQ2 +
+            bvQ3
 mdlRF <- lm(data=dataRF, formula=formula)
 summary(mdlRF)
 testing.model(mdlRF)
@@ -93,7 +104,6 @@ set.seed(1234)
 formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
                    " | continuous(perSIDinNGDP, indexPayment, indexInstitute)"))
 cplRF <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataRF)
-summary(cplRF)
 ```
 ```{r}
 summary(cplRF)
@@ -135,7 +145,27 @@ dataKZ$LNPLp <- c(14.6071858314849, dataKZ$NPLp[-36])
 ##--OLS model
 
 ```{r}
-formula <- NPLp ~ LUNEMPL + perSIDinNGDP + indexDemocracy + indexInstitute + indexPayment + LNPLp + + bvQ1 + bvQ2 +bvQ3
+formula <- NPLp ~ 
+  #LUNEMPL + 
+  perSIDinNGDP + 
+  indexDemocracy + 
+  indexInstitute + 
+  indexPayment +
+  #COFS+
+  Slr+
+  #AGRO+
+  #I(GREV/NGDP)+
+  #taxProfit+
+  #CH+
+  #I(SED/NGDP)+
+  indexBureau+
+  #RealInc+
+  #CM+
+  #DR+
+  LNPLp + 
+  bvQ1 + 
+  bvQ2 +
+  bvQ3
 mdlKZ <- lm(data=dataKZ, formula = formula)
 summary(mdlKZ)
 testing.model(mdlKZ)
@@ -177,8 +207,10 @@ tab
 
 ```{r}
 dataRB <- read_csv("C://R//Data//PaperGit//Paper//dataRB.csv", col_types = cols(Date = col_character()))
-dataRB$perSIDinNGDP <- dataRB$SID*100/dataRB$NGDP
+dataRB$perSIDinNGDP <- dataRB$SID*100/(dataRB$NGDP)
 dataRB$LNPLp <- c(1.09, dataRB$NPLp[-45])
+dataRB$lgGREV <- log(dataRB$GREV)
+dataRB$lgGEXP <- log(dataRB$GEXP)
 ```
 
 
@@ -190,7 +222,22 @@ colnames(dataRB)
 
 
 ```{r}
-formula <- NPLp ~ iloUnempl + I(iloUnempl^2) + perSIDinNGDP + indexInstitute + indexBureau + indexPayment+ LNPLp + indexDemocracy + I(GREV*100/NGDP) + I(GEXP*100/NGDP) + Tax+ bvQ1 + bvQ2 + bvQ3 
+formula <- NPLp ~ 
+  #iloUnempl + 
+  #I(iloUnempl^2) + 
+  #I(perSIDinNGDP^2) + 
+  perSIDinNGDP+
+  #indexInstitute + 
+  indexBureau + 
+  #indexPayment+ 
+  #indexDemocracy + 
+  lgGREV +
+  lgGEXP+
+  #Tax+ 
+  LNPLp+
+  bvQ1 + 
+  bvQ2 + 
+  bvQ3 
 mdlRB <- lm(data=dataRB, formula = formula)
 summary(mdlRB)
 testing.model(mdlRB)
@@ -205,7 +252,7 @@ testing.model(mdlRB)
 # Adjust randomness
 set.seed(1234)
 formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
-                   " | continuous(perSIDinNGDP, indexPayment, indexInstitute)"))
+                   " | continuous(perSIDinNGDP, indexBureau)"))
 
 cplRB <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataRB)
 ```
@@ -225,7 +272,7 @@ reset(cplRB)
 ##--Comparison of simulation results
 
 ```{r}
-tab <- matrix(c(c(mdlRB$coefficients, rep(NA,3)), cplRB$coefficients), ncol=2)
+tab <- matrix(c(c(mdlRB$coefficients, rep(NA,2)), cplRB$coefficients), ncol=2)
 colnames(tab) <- c("OLS", "Copula")
 rownames(tab) <- cplRB$names.main.coefs
 tab
@@ -249,7 +296,26 @@ colnames(dataKG)
 
 
 ```{r}
-formula <- NPLp ~ perSIDinNGDP + I(GREV*100/NGDP) + I(GEXP*100/NGDP) +WSGDP + Unempl + indexBureau  + indexDemocracy + indexInstitute + indexPayment + bvQ1 + bvQ2 +bvQ3
+formula <- NPLp ~ 
+  perSIDinNGDP + 
+  #I(GREV*100/NGDP) + 
+  #I(GEXP*100/NGDP) +
+  #WSGDP +
+  #Tax+
+  #DCPS+
+  #AGRO+
+  #DR+
+  #CM+
+  #CH+
+  #vTax+
+  I(Unempl^2) + 
+  indexBureau  + 
+  indexDemocracy + 
+  indexInstitute + 
+  indexPayment + 
+  bvQ1 + 
+  bvQ2 +
+  bvQ3
 mdlKG <- lm(data=dataKG, formula = formula)
 summary(mdlKG)
 testing.model(mdlKG)
@@ -276,6 +342,80 @@ summary(cplKG)
 tab <- matrix(c(c(mdlKG$coefficients, rep(NA,3)), cplKG$coefficients), ncol=2)
 colnames(tab) <- c("OLS", "Copula")
 rownames(tab) <- cplKG$names.main.coefs
+tab
+```
+
+# Armenia
+
+## --Importing data
+
+```{r}
+dataAR <- read_csv("C://R//Data//PaperGit//Paper//dataAR.csv", col_types = cols(Date = col_character()))
+dataAR$perSIDinNGDP <- dataAR$SID*100/dataAR$NGDP
+dataAR$LNPLp <- c(NA, dataAR$NPLp[-44])
+dataAR$L2NPLp <- c(NA, dataAR$LNPLp[-43])
+dataAR$LUnempl <- c(NA, dataAR$Unempl[-44])
+
+dataAR <- dataAR[3:44,]
+```
+
+##--OLS model
+
+```{r}
+colnames(dataAR)
+```
+
+
+```{r}
+formula <- NPLp ~ 
+  perSIDinNGDP + 
+  #I(GREV*100/NGDP) + 
+  #I(GEXP*100/NGDP) +
+  #WSGDP +
+  #Tax+
+  #DCPS+
+  #AGRO+
+  #DR+
+  #CM+
+  #CH+
+  #vTax+
+  Unempl +
+  indexBureau  + 
+  indexDemocracy + 
+  indexInstitute +
+  LNPLp+
+  L2NPLp+
+  bvQ1 + 
+  bvQ2 +
+  bvQ3
+mdlAR <- lm(data=dataAR, formula = formula)
+summary(mdlAR)
+testing.model(mdlAR)
+```
+
+
+##--Copula regression
+
+```{r include=FALSE}
+
+# Adjust randomness
+set.seed(1234)
+formulaCPL <- formula(paste(formula[2], formula[1], formula[3],
+                   " | continuous(perSIDinNGDP, indexInstitute)"))
+cplAR <- copulaCorrection(formula =  formulaCPL, num.boots = 10000, data=dataAR)
+```
+
+```{r}
+summary(cplAR)
+```
+
+
+##--Comparison of simulation results
+
+```{r}
+tab <- matrix(c(c(mdlAR$coefficients, rep(NA,2)), cplAR$coefficients), ncol=2)
+colnames(tab) <- c("OLS", "Copula")
+rownames(tab) <- cplAR$names.main.coefs
 tab
 ```
 

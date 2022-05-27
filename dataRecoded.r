@@ -509,3 +509,108 @@ dfAll$vTax <- dfQ$Tax*dfQ$NGDP/100
 
 dfWrk <- na.omit(dfAll)
 write.csv(dfWrk, file="dataKG.csv", row.names = F, quote = F)
+
+# Armenia----
+
+dataAR <- read_excel("dataAR.xlsx", sheet = "dataQ")
+
+
+## Interpolation----
+
+dataAR$DCPS <- c(rep(NA, 39), coredata(na.approx(zoo(dataAR$DCPS[40:84]))), rep(NA, 4))
+dataAR$AGRO <- c(rep(NA, 35), coredata(na.approx(zoo(dataAR$AGRO[36:84]))), rep(NA, 4))
+dataAR$WSGDP <- c(rep(NA, 27), coredata(na.approx(zoo(dataAR$WSGDP[28:84]))), rep(NA, 4))
+dataAR$GREV <- c(rep(NA, 35), coredata(na.approx(zoo(dataAR$GREV[36:88]))))
+dataAR$GEXP <- c(rep(NA, 35), coredata(na.approx(zoo(dataAR$GEXP[36:88]))))
+
+for (ie in colnames(dataAR)[10:15]){
+  BOB <- zoo(dataAR[[ie]])
+  BOB <- na.approx(BOB)
+  dataAR[[ie]] = c(rep(NA, 3), coredata(BOB), rep(NA, 4))
+}
+
+rm(BOB, ie)
+
+
+## Generating PCs----
+
+# indexInstitute
+INST_PCA = prcomp(dataAR[4:84, 10:15], scale = F, center = F)
+dataAR$indexInstitute = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 4))
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), 
+       main="indexInstitute (PC1) KG")
+
+# indexBureau
+INST_PCA = prcomp(dataAR[4:84, 10:15], scale = F, center = T)
+dataAR$indexBureau = c(rep(NA, 3), INST_PCA$x[,2], rep(NA, 4))
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), 
+       main="indexBureau (PC2) KG")
+
+# indexDemocracy
+democData <- data.frame(dataAR$GE[4:84], dataAR$PV[4:84], dataAR$RL[4:84],
+                        dataAR$VA[4:84])
+colnames(democData) <- c("GE", "PV" , "RL", "VA")
+INST_PCA = prcomp(democData,center = T, scale = T)
+dataAR$indexDemocracy = c(rep(NA, 3), INST_PCA$x[,1], rep(NA, 4))
+biplot(INST_PCA, xlabs = c(rep("*", nrow(INST_PCA$x))), col = c("#233f71","#c00000"), 
+       main="indexDemocracy (PC1) KG")
+rm(INST_PCA)
+
+
+## Monthly data ----
+
+dfM <- read.xlsx("dataAR.xlsx", sheet="dataM", detectDates = T)
+dfQ <- dataAR
+dfQ <- dfQ[1:88, ]
+rm(dataAR)
+
+# choose columns from quarterly data
+names = c("Date", "NGDP", "WSGDP", "Tax", "DCPS", "AGRO", "GREV",
+          "GEXP", "indexInstitute", "indexBureau", "indexDemocracy", 
+          "NPLp", "SID", "Unempl")
+dfAll <- dfQ[, names]
+rm(names)
+
+# determ. seasonal (Q) components
+dfAll$bvQ1 <- 0
+dfAll$bvQ2 <- 0
+dfAll$bvQ3 <- 0
+
+for(i in 1:nrow(dfAll)){
+  lstch <- str_sub(dfAll$Date[i], start = -1)
+  if(lstch=="1"){dfAll$bvQ1[i] <- 1}
+  if(lstch=="2"){dfAll$bvQ2[i] <- 1}
+  if(lstch=="3"){dfAll$bvQ3[i] <- 1}
+  
+} # end for i
+
+# Row of date as year.qtr format
+dfAll$Date <- as.yearqtr(dfAll$Date, format = "%Y-%q")
+
+## Monthly to Quarterly----
+
+idxQe <- seq(from=4, to=259, by=3)
+
+# M2
+dfAll$M2 <- dfM$M2[idxQe]
+
+# M1
+dfAll$M1 <- dfM$M2[idxQe]
+
+# M0
+dfAll$M0 <- dfM$M0[idxQe]
+
+#DR
+dfAll$DR <- dfM$DR[idxQe]
+
+
+## Feature generation----
+
+# CM
+dfAll$CM <- dfAll$M0*100/dfAll$M2
+
+# volume of taxes
+dfAll$vTax <- dfQ$Tax*dfQ$NGDP/100
+
+dfWrk <- na.omit(dfAll)
+write.csv(dfWrk, file="dataAR.csv", row.names = F, quote = F)
